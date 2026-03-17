@@ -197,7 +197,7 @@ require 'includes/data.php';
 $totalDonors  = $pdo->query("SELECT COUNT(*) FROM users")->fetchColumn();
 $unreadMsgs   = $pdo->query("SELECT COUNT(*) FROM messages WHERE status='unread'")->fetchColumn();
 $totalRaised  = $pdo->query("SELECT COALESCE(SUM(amount),0) FROM donations")->fetchColumn();
-$activeCamps  = $pdo->query("SELECT COUNT(*) FROM campaigns WHERE status='active'")->fetchColumn();
+$activeCamps  = $pdo->query("SELECT COUNT(*) FROM campaigns WHERE is_active=1")->fetchColumn();
 
 include_once 'includes/header.php';
 ?>

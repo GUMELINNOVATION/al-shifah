@@ -39,7 +39,7 @@ function uploadWidget(string $widgetId, string $fieldId, string $currentValue=''
 
 // Dashboard
 if ($tab === 'dashboard'):
-    $donations   = $pdo->query("SELECT * FROM donations ORDER BY created_at DESC LIMIT 8")->fetchAll();
+    $donations   = $pdo->query("SELECT * FROM donations ORDER BY donation_date DESC, id DESC LIMIT 8")->fetchAll();
     $recentMsgs  = $pdo->query("SELECT * FROM messages ORDER BY created_at DESC LIMIT 5")->fetchAll();
 ?>
 <div class="stat-grid">
@@ -66,7 +66,7 @@ if ($tab === 'dashboard'):
       <thead><tr><th>Donor</th><th>Amount</th><th>Date</th></tr></thead>
       <tbody>
         <?php foreach ($donations as $d): ?>
-        <tr><td><?php echo htmlspecialchars($d['name']??'—'); ?></td><td>₦<?php echo number_format($d['amount']); ?></td><td style="color:var(--muted);font-size:12px;"><?php echo date('M j',strtotime($d['created_at']??'now')); ?></td></tr>
+        <tr><td><?php echo htmlspecialchars($d['donor_name']??'—'); ?></td><td>₦<?php echo number_format($d['amount']); ?></td><td style="color:var(--muted);font-size:12px;"><?php echo date('M j',strtotime($d['donation_date']??'now')); ?></td></tr>
         <?php endforeach; if(!$donations): ?><tr><td colspan="3" style="text-align:center;color:var(--muted);padding:20px;">No donations yet</td></tr><?php endif; ?>
       </tbody>
     </table>
@@ -514,7 +514,7 @@ function exportCSV() {
     <tbody>
       <?php foreach ($donors as $d): ?>
       <tr>
-        <td><strong><?php echo htmlspecialchars($d['name']??$d['username']??'—'); ?></strong></td>
+        <td><strong><?php echo htmlspecialchars($d['full_name']??'—'); ?></strong></td>
         <td style="font-size:12px;"><?php echo htmlspecialchars($d['email']); ?></td>
         <td><?php echo $d['donation_count']; ?> donations</td>
         <td>₦<?php echo number_format($d['total_given']); ?></td>

@@ -5,6 +5,13 @@ require_once 'includes/data.php';
 $id = isset($_GET['campaign']) ? $_GET['campaign'] : null;
 $selectedCampaign = getCampaignById($id, $CAMPAIGNS);
 
+$user = null;
+if (isset($_SESSION['user_id'])) {
+    $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
+    $stmt->execute([$_SESSION['user_id']]);
+    $user = $stmt->fetch();
+}
+
 $pageTitle = "Support Al-Shifah";
 
 include_once 'includes/header.php';
@@ -97,7 +104,7 @@ include_once 'includes/header.php';
                         <div id="personal-fields" class="space-y-6 transition-all duration-300 overflow-hidden">
                             <div>
                                 <label class="block text-sm font-bold text-slate-700 mb-2">Full Name <span class="text-slate-400 font-normal ml-1">(Optional)</span></label>
-                                <input type="text" id="donor-name" placeholder="E.g. Ahmed Musa" value="<?php echo $user ? htmlspecialchars($user['name']) : ''; ?>" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl py-3 px-4 font-medium outline-none focus:border-emerald-600" />
+                                <input type="text" id="donor-name" placeholder="E.g. Ahmed Musa" value="<?php echo $user ? htmlspecialchars($user['full_name']) : ''; ?>" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl py-3 px-4 font-medium outline-none focus:border-emerald-600" />
                             </div>
                             <div>
                                 <label class="block text-sm font-bold text-slate-700 mb-2">Email Address <span class="text-slate-400 font-normal ml-1">(Optional)</span></label>
