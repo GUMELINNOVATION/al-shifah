@@ -219,7 +219,7 @@ CREATE TABLE IF NOT EXISTS team_members (
 INSERT INTO team_members (name, role, type, order_rank) VALUES 
 ('Muhammad Abubakar Abdullahi', 'Chairman', 'Trustee', 1),
 ('Gumel Mustapha Ali', 'Secretary', 'Trustee', 2),
-('Talba Bukar Talba', 'Board Member', 'Trustee', 3);
+('Talba Bukar Talba', 'Vice Chairman', 'Trustee', 3);
 
 -- 7. Campaigns
 CREATE TABLE IF NOT EXISTS campaigns (
