@@ -188,7 +188,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pdo->prepare("UPDATE site_settings SET setting_value=? WHERE setting_key=?")->execute([$v,$k]);
         foreach ($_POST['footer_blocks'] ?? [] as $k => $v)
             $pdo->prepare("INSERT INTO content_blocks (section_key,block_key,block_value) VALUES('footer',?,?) ON DUPLICATE KEY UPDATE block_value=VALUES(block_value)")->execute([$k,$v]);
+        if ($_POST['nav_settings_action'] === 'add_admin') {
+            // Placeholder for admin creation if needed elsewhere, but mainly handled in admin_users tab
+        }
         $msg = "Navigation & footer saved.";
+    }
+
+    // Admin Users Management
+    if (isset($_POST['admin_action'])) {
+        $isSuper = ($_SESSION['admin_role'] ?? '') === 'super_admin';
+        if ($isSuper) {
+            if ($_POST['admin_action'] === 'delete') {
+                $id = (int)$_POST['admin_id'];
+                // Prevent deleting self or primary admin
+                if ($id !== (int)$_SESSION['admin_id']) {
+                    $pdo->prepare("DELETE FROM admins WHERE id=? AND username != 'admin'")->execute([$id]);
+                    $msg = "Administrator removed.";
+                } else {
+                    $msg = "You cannot delete yourself."; $msgType = 'error';
+                }
+            } elseif ($_POST['admin_action'] === 'save') {
+                $id = $_POST['admin_id'] ?: null;
+                $user = trim($_POST['username']);
+                $email = trim($_POST['email']);
+                $role = $_POST['role'] ?? 'admin';
+                $pass = $_POST['password'] ?? '';
+
+                if ($id) {
+                    if ($pass) {
+                        $pdo->prepare("UPDATE admins SET username=?, email=?, role=?, password=? WHERE id=?")->execute([$user, $email, $role, password_hash($pass, PASSWORD_DEFAULT), $id]);
+                    } else {
+                        $pdo->prepare("UPDATE admins SET username=?, email=?, role=? WHERE id=?")->execute([$user, $email, $role, $id]);
+                    }
+                    $msg = "Administrator updated.";
+                } else {
+                    $pdo->prepare("INSERT INTO admins (username, email, role, password) VALUES (?, ?, ?, ?)")->execute([$user, $email, $role, password_hash($pass, PASSWORD_DEFAULT)]);
+                    $msg = "New administrator created.";
+                }
+            }
+        } else {
+            $msg = "Unauthorized action."; $msgType = 'error';
+        }
     }
 }
 
@@ -327,6 +367,7 @@ include_once 'includes/header.php';
       ],
       'Admin' => [
         ['tab'=>'users','label'=>'Donors','icon'=>'users'],
+        ['tab'=>'admin_users','label'=>'Manage Admins','icon'=>'shield-check'],
         ['tab'=>'components','label'=>'Impact Stats','icon'=>'trending-up'],
         ['tab'=>'objectives','label'=>'Objectives','icon'=>'target'],
         ['tab'=>'settings','label'=>'Settings','icon'=>'settings'],

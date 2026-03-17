@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS admins (
     username VARCHAR(50) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     email VARCHAR(100) NOT NULL,
+    role ENUM('super_admin', 'admin') DEFAULT 'admin',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -23,8 +24,8 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 -- Insert default admin (Password is 'admin123' - user should change it)
-INSERT INTO admins (username, password, email) VALUES 
-('admin', '$2y$12$.tJKmFVxXwr1Tf0hgNtsoeFCY3k6mIVKqx29OHaeun9/TWrQwZc9i', 'admin@alshifah.org');
+INSERT INTO admins (username, password, email, role) VALUES 
+('admin', '$2y$12$.tJKmFVxXwr1Tf0hgNtsoeFCY3k6mIVKqx29OHaeun9/TWrQwZc9i', 'admin@alshifah.org', 'super_admin');
 
 -- 2. Site Settings Table (Global)
 CREATE TABLE IF NOT EXISTS site_settings (

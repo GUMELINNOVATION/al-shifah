@@ -570,6 +570,99 @@ function exportCSV() {
   </form>
 </div>
 
+<?php elseif ($tab === 'admin_users'):
+    $isSuper = ($_SESSION['admin_role'] ?? '') === 'super_admin';
+    $admins  = $pdo->query("SELECT * FROM admins ORDER BY id ASC")->fetchAll();
+    $editAdm = null;
+    if ($isSuper && isset($_GET['edit_admin'])) {
+        $s = $pdo->prepare("SELECT * FROM admins WHERE id=?");
+        $s->execute([$_GET['edit_admin']]);
+        $editAdm = $s->fetch();
+    }
+?>
+<div class="section-header">
+  <div><p class="section-title">Administrative Users</p><p class="section-sub">Manage system administrators and their access levels.</p></div>
+  <?php if($isSuper): ?><a href="?tab=admin_users" class="btn btn-primary"><i data-lucide="plus" style="width:13px;height:13px;"></i> New Admin</a><?php endif; ?>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr <?php echo $isSuper?'380px':''; ?>;gap:16px;align-items:start;">
+  <div class="card">
+    <div class="card-header"><h2>All Administrators</h2></div>
+    <table class="data-table">
+      <thead><tr><th>Username</th><th>Email</th><th>Role</th><th>Joined</th><th></th></tr></thead>
+      <tbody>
+        <?php foreach ($admins as $a): ?>
+        <tr>
+          <td>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:32px;height:32px;background:#f1f5f9;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:var(--muted);">
+                <?php echo strtoupper(substr($a['username'],0,1)); ?>
+              </div>
+              <strong><?php echo htmlspecialchars($a['username']); ?></strong>
+            </div>
+          </td>
+          <td style="font-size:13px;"><?php echo htmlspecialchars($a['email']); ?></td>
+          <td>
+            <span class="badge-pill <?php echo $a['role']==='super_admin'?'badge-red':'badge-blue'; ?>">
+              <?php echo $a['role']==='super_admin'?'Super Admin':'Admin'; ?>
+            </span>
+          </td>
+          <td style="font-size:12px;color:var(--muted);"><?php echo date('M j, Y', strtotime($a['created_at'])); ?></td>
+          <td style="display:flex;gap:6px;justify-content:flex-end;">
+            <?php if($isSuper): ?>
+              <a href="?tab=admin_users&edit_admin=<?php echo $a['id']; ?>" class="btn btn-sm btn-secondary btn-icon" title="Edit"><i data-lucide="pencil" style="width:13px;height:13px;"></i></a>
+              <?php if($a['username'] !== 'admin' && (int)$a['id'] !== (int)$_SESSION['admin_id']): ?>
+                <form method="POST" onsubmit="return confirm('Remove administrator?');" style="display:inline;">
+                  <input type="hidden" name="admin_action" value="delete">
+                  <input type="hidden" name="admin_id" value="<?php echo $a['id']; ?>">
+                  <button class="btn btn-sm btn-danger btn-icon" title="Delete"><i data-lucide="trash-2" style="width:13px;height:13px;"></i></button>
+                </form>
+              <?php endif; ?>
+            <?php endif; ?>
+          </td>
+        </tr>
+        <?php endforeach; ?>
+      </tbody>
+    </table>
+  </div>
+
+  <?php if($isSuper): ?>
+  <div class="card">
+    <div class="card-header"><h2><?php echo $editAdm?'Edit Administrator':'Create New Admin'; ?></h2></div>
+    <div class="card-body">
+      <form method="POST">
+        <input type="hidden" name="admin_action" value="save">
+        <input type="hidden" name="admin_id" value="<?php echo $editAdm['id']??''; ?>">
+        <div class="form-group">
+          <label class="form-label">Username</label>
+          <input type="text" name="username" class="form-input" value="<?php echo htmlspecialchars($editAdm['username']??''); ?>" required <?php echo ($editAdm['username']??'')==='admin'?'readonly':''; ?>>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" name="email" class="form-input" value="<?php echo htmlspecialchars($editAdm['email']??''); ?>" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Role</label>
+          <select name="role" class="form-input form-select" <?php echo ($editAdm['username']??'')==='admin'?'disabled':''; ?>>
+            <option value="admin" <?php echo ($editAdm['role']??'')==='admin'?'selected':''; ?>>Standard Administrator</option>
+            <option value="super_admin" <?php echo ($editAdm['role']??'')==='super_admin'?'selected':''; ?>>Super Administrator</option>
+          </select>
+          <?php if(($editAdm['username']??'')==='admin'): ?><input type="hidden" name="role" value="super_admin"><?php endif; ?>
+        </div>
+        <div class="form-group">
+          <label class="form-label"><?php echo $editAdm?'New Password (leave blank to keep current)':'Password'; ?></label>
+          <input type="password" name="password" class="form-input" <?php echo $editAdm?'':'required'; ?>>
+        </div>
+        <button class="btn btn-primary" style="width:100%;"><?php echo $editAdm?'Update Administrator':'Create Administrator'; ?></button>
+        <?php if($editAdm): ?>
+          <a href="?tab=admin_users" class="btn btn-secondary" style="width:100%;margin-top:8px;">Cancel</a>
+        <?php endif; ?>
+      </form>
+    </div>
+  </div>
+  <?php endif; ?>
+</div>
+
 <?php elseif ($tab === 'settings'): ?>
 <div class="section-header"><p class="section-title">Settings</p><p class="section-sub">Core site-wide configuration.</p></div>
 <form method="POST">

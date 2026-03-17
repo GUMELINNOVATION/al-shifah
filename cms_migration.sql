@@ -116,6 +116,10 @@ INSERT IGNORE INTO content_blocks (section_key, block_key, block_value) VALUES
 ('contact',   'form_heading',      'Send Us a Message'),
 ('footer',    'tagline',           'Committed to humanitarian excellence and community service.');
 
+-- 7. Admin Roles
+ALTER TABLE admins ADD COLUMN IF NOT EXISTS role ENUM('super_admin', 'admin') DEFAULT 'admin';
+UPDATE admins SET role = 'super_admin' WHERE username = 'admin';
+
 -- 6. Create contact_settings table
 CREATE TABLE IF NOT EXISTS contact_settings (
     id INT AUTO_INCREMENT PRIMARY KEY,
