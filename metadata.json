@@ -1,0 +1,8 @@
+{
+  "name": "AL-SHIFAH CHARITY FOUNDATION",
+  "description": "A non-profit organisation that raises funds to provide valuable support, charities, and programs that allow us to establish services within the community and make a difference.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
