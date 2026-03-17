@@ -317,8 +317,11 @@ function exportCSV() {
 
 <?php elseif ($tab === 'campaigns'):
     $campaigns = $pdo->query("SELECT * FROM campaigns ORDER BY id DESC")->fetchAll();
-    $editCamp  = null;
-    if (isset($_GET['edit'])) $editCamp = $pdo->prepare("SELECT * FROM campaigns WHERE id=?") ? ($s=$pdo->prepare("SELECT * FROM campaigns WHERE id=?"))&&$s->execute([$_GET['edit']]) ? $s->fetch() : null : null;
+    if (isset($_GET['edit'])) {
+        $stmt = $pdo->prepare("SELECT * FROM campaigns WHERE id=?");
+        $stmt->execute([$_GET['edit']]);
+        $editCamp = $stmt->fetch();
+    }
 ?>
 <div style="display:grid;grid-template-columns:1fr 380px;gap:16px;align-items:start;">
   <div class="card">
