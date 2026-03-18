@@ -311,6 +311,8 @@ function exportCSV() {
         if ($viewMessage && $viewMessage['status'] === 'unread') {
             $pdo->prepare("UPDATE messages SET status='read' WHERE id=?")->execute([$_GET['view']]);
             $viewMessage['status'] = 'read';
+            // Refresh badge count so the sidebar reflects the updated read state
+            $unreadMsgs = $pdo->query("SELECT COUNT(*) FROM messages WHERE status='unread'")->fetchColumn();
         }
     }
 
