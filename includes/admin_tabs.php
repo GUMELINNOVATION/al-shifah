@@ -80,7 +80,15 @@ if ($tab === 'dashboard'):
         <thead><tr><th>From</th><th>Subject</th><th>Status</th></tr></thead>
         <tbody>
           <?php foreach ($recentMsgs as $m): ?>
-          <tr><td><?php echo htmlspecialchars($m['name']??'—'); ?></td><td style="font-size:12px;"><?php echo htmlspecialchars(substr($m['subject']??'',0,30)); ?></td><td><span class="badge-pill <?php echo $m['status']==='unread'?'badge-blue':'badge-green'; ?>"><?php echo $m['status']; ?></span></td></tr>
+          <tr>
+            <td><?php echo htmlspecialchars($m['name']??'—'); ?></td>
+            <td style="font-size:12px;"><?php echo htmlspecialchars(substr($m['subject']??'',0,30)); ?></td>
+            <td>
+              <a href="?tab=messages&view=<?php echo $m['id']; ?>" class="badge-pill <?php echo $m['status']==='unread'?'badge-blue':'badge-green'; ?>" style="text-decoration:none; display:inline-block;">
+                <?php echo $m['status']; ?>
+              </a>
+            </td>
+          </tr>
           <?php endforeach; if(!$recentMsgs): ?><tr><td colspan="3" style="text-align:center;color:var(--muted);padding:20px;">No messages</td></tr><?php endif; ?>
         </tbody>
       </table>
@@ -294,34 +302,91 @@ function exportCSV() {
 </div>
 
 <?php elseif ($tab === 'messages'):
+    // If viewing a single message, mark it read immediately
+    $viewMessage = null;
+    if (isset($_GET['view']) && is_numeric($_GET['view'])) {
+        $stmt = $pdo->prepare("SELECT * FROM messages WHERE id=?");
+        $stmt->execute([$_GET['view']]);
+        $viewMessage = $stmt->fetch();
+        if ($viewMessage && $viewMessage['status'] === 'unread') {
+            $pdo->prepare("UPDATE messages SET status='read' WHERE id=?")->execute([$_GET['view']]);
+            $viewMessage['status'] = 'read';
+        }
+    }
+
     $messages = $pdo->query("SELECT * FROM messages ORDER BY created_at DESC")->fetchAll();
 ?>
 <div class="section-header">
   <div><p class="section-title">Messages</p><p class="section-sub">Contact form submissions from your website.</p></div>
+  <?php if ($viewMessage): ?><a href="?tab=messages" class="btn btn-sm btn-secondary" style="height:36px;"><i data-lucide="arrow-left" style="width:13px;height:13px;"></i> Back to list</a><?php endif; ?>
 </div>
-<div class="card">
-  <table class="data-table">
-    <thead><tr><th>Name</th><th>Email</th><th>Subject</th><th>Message</th><th>Date</th><th>Status</th><th></th></tr></thead>
-    <tbody>
-      <?php foreach ($messages as $m): ?>
-      <tr style="<?php echo $m['status']==='unread'?'font-weight:600;':''; ?>">
-        <td><?php echo htmlspecialchars($m['name']); ?></td>
-        <td style="font-size:12px;"><a href="mailto:<?php echo $m['email']; ?>" style="color:var(--emerald);"><?php echo htmlspecialchars($m['email']); ?></a></td>
-        <td><?php echo htmlspecialchars($m['subject']); ?></td>
-        <td style="font-size:12px;color:var(--muted);max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><?php echo htmlspecialchars($m['message']); ?></td>
-        <td style="font-size:12px;color:var(--muted);"><?php echo isset($m['created_at'])?date('M j',strtotime($m['created_at'])):'—'; ?></td>
-        <td><span class="badge-pill <?php echo $m['status']==='unread'?'badge-blue':'badge-green'; ?>"><?php echo $m['status']; ?></span></td>
-        <td style="display:flex;gap:6px;">
-          <?php if($m['status']==='unread'): ?>
-          <form method="POST"><input type="hidden" name="message_action" value="read"><input type="hidden" name="message_id" value="<?php echo $m['id']; ?>"><button class="btn btn-sm btn-secondary btn-icon" title="Mark read"><i data-lucide="check" style="width:13px;height:13px;"></i></button></form>
-          <?php endif; ?>
-          <form method="POST" onsubmit="return confirm('Delete?');"><input type="hidden" name="message_action" value="delete"><input type="hidden" name="message_id" value="<?php echo $m['id']; ?>"><button class="btn btn-sm btn-danger btn-icon"><i data-lucide="trash-2" style="width:13px;height:13px;"></i></button></form>
-        </td>
-      </tr>
-      <?php endforeach; ?>
-    </tbody>
-  </table>
-</div>
+
+<?php if ($viewMessage): ?>
+  <div class="card">
+    <div class="card-header"><h2>Message Details</h2></div>
+    <div class="card-body">
+      <div style="display:flex;gap:24px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:240px;">
+          <p><strong>Name</strong><br><?php echo htmlspecialchars($viewMessage['name']); ?></p>
+          <p><strong>Email</strong><br><a href="mailto:<?php echo htmlspecialchars($viewMessage['email']); ?>" style="color:var(--emerald);"><?php echo htmlspecialchars($viewMessage['email']); ?></a></p>
+          <p><strong>Subject</strong><br><?php echo htmlspecialchars($viewMessage['subject']); ?></p>
+          <p><strong>Date</strong><br><?php echo isset($viewMessage['created_at'])?date('M j, Y g:ia',strtotime($viewMessage['created_at'])):'—'; ?></p>
+          <p><strong>Status</strong><br><span class="badge-pill <?php echo $viewMessage['status']==='unread'?'badge-blue':'badge-green'; ?>"><?php echo $viewMessage['status']; ?></span></p>
+        </div>
+        <div style="flex:2;min-width:320px;">
+          <p><strong>Message</strong></p>
+          <div style="padding:16px;background:#f8fafc;border:1px solid rgba(0,0,0,0.05);border-radius:12px;white-space:pre-wrap;">
+            <?php echo nl2br(htmlspecialchars($viewMessage['message'])); ?>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:20px;display:flex;gap:10px;flex-wrap:wrap;">
+        <a href="mailto:<?php echo htmlspecialchars($viewMessage['email']); ?>?subject=Re: <?php echo urlencode($viewMessage['subject']); ?>" class="btn btn-primary" style="text-decoration:none;display:flex;align-items:center;gap:8px;">
+          <i data-lucide="mail" style="width:14px;height:14px;"></i> Reply via Email
+        </a>
+        <form method="POST" onsubmit="return confirm('Delete this message?');">
+          <input type="hidden" name="message_action" value="delete">
+          <input type="hidden" name="message_id" value="<?php echo $viewMessage['id']; ?>">
+          <button class="btn btn-danger">Delete</button>
+        </form>
+        <?php if ($viewMessage['status'] !== 'read'): ?>
+        <form method="POST">
+          <input type="hidden" name="message_action" value="read">
+          <input type="hidden" name="message_id" value="<?php echo $viewMessage['id']; ?>">
+          <button class="btn btn-secondary">Mark as read</button>
+        </form>
+        <?php endif; ?>
+      </div>
+    </div>
+  </div>
+<?php else: ?>
+  <div class="card">
+    <table class="data-table">
+      <thead><tr><th>Name</th><th>Email</th><th>Subject</th><th>Message</th><th>Date</th><th>Status</th><th style="width:120px;text-align:right;">Actions</th></tr></thead>
+      <tbody>
+        <?php foreach ($messages as $m): ?>
+        <tr style="<?php echo $m['status']==='unread'?'font-weight:600;':''; ?>">
+          <td><?php echo htmlspecialchars($m['name']); ?></td>
+          <td style="font-size:12px;"><a href="mailto:<?php echo $m['email']; ?>" style="color:var(--emerald);"><?php echo htmlspecialchars($m['email']); ?></a></td>
+          <td><?php echo htmlspecialchars($m['subject']); ?></td>
+          <td style="font-size:12px;color:var(--muted);max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+            <?php echo htmlspecialchars($m['message']); ?>
+          </td>
+          <td style="font-size:12px;color:var(--muted);"><?php echo isset($m['created_at'])?date('M j',strtotime($m['created_at'])):'—'; ?></td>
+          <td><span class="badge-pill <?php echo $m['status']==='unread'?'badge-blue':'badge-green'; ?>"><?php echo $m['status']; ?></span></td>
+          <td style="display:flex;gap:6px;justify-content:flex-end;">
+            <a href="?tab=messages&view=<?php echo $m['id']; ?>" class="btn btn-sm btn-secondary btn-icon" title="View"><i data-lucide="eye" style="width:13px;height:13px;"></i></a>
+            <?php if($m['status']==='unread'): ?>
+            <form method="POST"><input type="hidden" name="message_action" value="read"><input type="hidden" name="message_id" value="<?php echo $m['id']; ?>"><button class="btn btn-sm btn-secondary btn-icon" title="Mark read"><i data-lucide="check" style="width:13px;height:13px;"></i></button></form>
+            <?php endif; ?>
+            <form method="POST" onsubmit="return confirm('Delete?');"><input type="hidden" name="message_action" value="delete"><input type="hidden" name="message_id" value="<?php echo $m['id']; ?>"><button class="btn btn-sm btn-danger btn-icon"><i data-lucide="trash-2" style="width:13px;height:13px;"></i></button></form>
+          </td>
+        </tr>
+        <?php endforeach; ?>
+      </tbody>
+    </table>
+  </div>
+<?php endif; ?>
 
 <?php elseif ($tab === 'campaigns'):
     $campaigns = $pdo->query("SELECT * FROM campaigns ORDER BY id DESC")->fetchAll();
