@@ -59,28 +59,32 @@ if ($tab === 'dashboard'):
   <?php endforeach; ?>
 </div>
 
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+<div class="grid-2col grid-responsive">
   <div class="card">
     <div class="card-header"><h2>Recent Donations</h2></div>
-    <table class="data-table">
-      <thead><tr><th>Donor</th><th>Amount</th><th>Date</th></tr></thead>
-      <tbody>
-        <?php foreach ($donations as $d): ?>
-        <tr><td><?php echo htmlspecialchars($d['donor_name']??'—'); ?></td><td>₦<?php echo number_format($d['amount']); ?></td><td style="color:var(--muted);font-size:12px;"><?php echo date('M j',strtotime($d['donation_date']??'now')); ?></td></tr>
-        <?php endforeach; if(!$donations): ?><tr><td colspan="3" style="text-align:center;color:var(--muted);padding:20px;">No donations yet</td></tr><?php endif; ?>
-      </tbody>
-    </table>
+    <div class="data-table-wrapper">
+      <table class="data-table">
+        <thead><tr><th>Donor</th><th>Amount</th><th>Date</th></tr></thead>
+        <tbody>
+          <?php foreach ($donations as $d): ?>
+          <tr><td><?php echo htmlspecialchars($d['donor_name']??'—'); ?></td><td>₦<?php echo number_format($d['amount']); ?></td><td style="color:var(--muted);font-size:12px;"><?php echo date('M j',strtotime($d['donation_date']??'now')); ?></td></tr>
+          <?php endforeach; if(!$donations): ?><tr><td colspan="3" style="text-align:center;color:var(--muted);padding:20px;">No donations yet</td></tr><?php endif; ?>
+        </tbody>
+      </table>
+    </div>
   </div>
   <div class="card">
     <div class="card-header"><h2>Recent Messages</h2></div>
-    <table class="data-table">
-      <thead><tr><th>From</th><th>Subject</th><th>Status</th></tr></thead>
-      <tbody>
-        <?php foreach ($recentMsgs as $m): ?>
-        <tr><td><?php echo htmlspecialchars($m['name']??'—'); ?></td><td style="font-size:12px;"><?php echo htmlspecialchars(substr($m['subject']??'',0,30)); ?></td><td><span class="badge-pill <?php echo $m['status']==='unread'?'badge-blue':'badge-green'; ?>"><?php echo $m['status']; ?></span></td></tr>
-        <?php endforeach; if(!$recentMsgs): ?><tr><td colspan="3" style="text-align:center;color:var(--muted);padding:20px;">No messages</td></tr><?php endif; ?>
-      </tbody>
-    </table>
+    <div class="data-table-wrapper">
+      <table class="data-table">
+        <thead><tr><th>From</th><th>Subject</th><th>Status</th></tr></thead>
+        <tbody>
+          <?php foreach ($recentMsgs as $m): ?>
+          <tr><td><?php echo htmlspecialchars($m['name']??'—'); ?></td><td style="font-size:12px;"><?php echo htmlspecialchars(substr($m['subject']??'',0,30)); ?></td><td><span class="badge-pill <?php echo $m['status']==='unread'?'badge-blue':'badge-green'; ?>"><?php echo $m['status']; ?></span></td></tr>
+          <?php endforeach; if(!$recentMsgs): ?><tr><td colspan="3" style="text-align:center;color:var(--muted);padding:20px;">No messages</td></tr><?php endif; ?>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 
@@ -111,19 +115,21 @@ if ($tab === 'dashboard'):
 </div>
 <div class="card">
   <div class="card-header"><h2>Recent Financial Activity</h2><span class="sub">Latest processed transactions</span></div>
-  <table class="data-table">
-    <thead><tr><th>Year</th><th>Category</th><th>Amount</th><th>Notes</th></tr></thead>
-    <tbody>
-      <?php foreach ($recentFinances as $f): ?>
-      <tr>
-        <td><?php echo htmlspecialchars($f['fiscal_year']); ?></td>
-        <td><span class="badge-pill <?php echo $f['category']==='income'?'badge-green':'badge-red'; ?>"><?php echo ucfirst($f['category']); ?></span></td>
-        <td style="font-weight:600;">₦<?php echo number_format($f['amount']); ?></td>
-        <td style="color:var(--muted);font-size:12px;"><?php echo htmlspecialchars(substr($f['usage_context']??'',0,60)); ?></td>
-      </tr>
-      <?php endforeach; if(!$recentFinances): ?><tr><td colspan="4" style="text-align:center;color:var(--muted);padding:20px;">No recent records</td></tr><?php endif; ?>
-    </tbody>
-  </table>
+  <div class="data-table-wrapper">
+    <table class="data-table">
+      <thead><tr><th>Year</th><th>Category</th><th>Amount</th><th>Notes</th></tr></thead>
+      <tbody>
+        <?php foreach ($recentFinances as $f): ?>
+        <tr>
+          <td><?php echo htmlspecialchars($f['fiscal_year']); ?></td>
+          <td><span class="badge-pill <?php echo $f['category']==='income'?'badge-green':'badge-red'; ?>"><?php echo ucfirst($f['category']); ?></span></td>
+          <td style="font-weight:600;">₦<?php echo number_format($f['amount']); ?></td>
+          <td style="color:var(--muted);font-size:12px;"><?php echo htmlspecialchars(substr($f['usage_context']??'',0,60)); ?></td>
+        </tr>
+        <?php endforeach; if(!$recentFinances): ?><tr><td colspan="4" style="text-align:center;color:var(--muted);padding:20px;">No recent records</td></tr><?php endif; ?>
+      </tbody>
+    </table>
+  </div>
 </div>
 
 <?php elseif ($tab === 'reports'):
@@ -161,21 +167,23 @@ if ($tab === 'dashboard'):
 
   <div>
     <h3 style="font-size:16px;color:#0f172a;margin-bottom:16px;">Recent Donation Log (Last 50)</h3>
-    <table class="data-table" id="export-table" style="border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;">
-      <thead>
-        <tr><th>Date</th><th>Donor Name</th><th>Amount (₦)</th><th>Identity</th></tr>
-      </thead>
-      <tbody>
-        <?php foreach ($allDonations as $d): ?>
-        <tr>
-          <td><?php echo htmlspecialchars($d['donation_date']); ?></td>
-          <td><?php echo htmlspecialchars($d['donor_name']); ?></td>
-          <td style="font-family:monospace;font-size:13px;"><?php echo number_format($d['amount'], 2); ?></td>
-          <td><?php echo $d['is_anonymous'] ? 'Anonymous' : 'Public'; ?></td>
-        </tr>
-        <?php endforeach; ?>
-      </tbody>
-    </table>
+    <div class="data-table-wrapper">
+      <table class="data-table" id="export-table" style="border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;">
+        <thead>
+          <tr><th>Date</th><th>Donor Name</th><th>Amount (₦)</th><th>Identity</th></tr>
+        </thead>
+        <tbody>
+          <?php foreach ($allDonations as $d): ?>
+          <tr>
+            <td><?php echo htmlspecialchars($d['donation_date']); ?></td>
+            <td><?php echo htmlspecialchars($d['donor_name']); ?></td>
+            <td style="font-family:monospace;font-size:13px;">₦<?php echo number_format($d['amount'], 2); ?></td>
+            <td><?php echo $d['is_anonymous'] ? 'Anonymous' : 'Public'; ?></td>
+          </tr>
+          <?php endforeach; ?>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 
@@ -241,7 +249,7 @@ function exportCSV() {
 <div class="section-header">
   <div><p class="section-title">Finance Records</p><p class="section-sub">Track income and expenditure by fiscal year.</p></div>
 </div>
-<div style="display:grid;grid-template-columns:1fr 340px;gap:16px;align-items:start;">
+<div class="grid-1-340 grid-responsive">
   <div class="card">
     <div class="card-header"><h2>All Records</h2></div>
     <table class="data-table">
@@ -478,14 +486,16 @@ function exportCSV() {
 <div style="display:grid;grid-template-columns:1fr 360px;gap:16px;align-items:start;">
   <div class="card">
     <div class="card-header"><h2>Sent Broadcasts</h2></div>
-    <table class="data-table">
-      <thead><tr><th>Subject</th><th>Audience</th><th>Sent</th></tr></thead>
-      <tbody>
-        <?php foreach ($broads as $b): ?>
-        <tr><td><?php echo htmlspecialchars($b['subject']); ?></td><td><span class="badge-pill badge-blue"><?php echo $b['target_group']; ?></span></td><td style="font-size:12px;color:var(--muted);"><?php echo isset($b['sent_at'])?date('M j, Y',strtotime($b['sent_at'])):'—'; ?></td></tr>
-        <?php endforeach; if(!$broads): ?><tr><td colspan="3" style="text-align:center;color:var(--muted);padding:20px;">No broadcasts sent yet</td></tr><?php endif; ?>
-      </tbody>
-    </table>
+    <div class="data-table-wrapper">
+      <table class="data-table">
+        <thead><tr><th>Subject</th><th>Audience</th><th>Sent</th></tr></thead>
+        <tbody>
+          <?php foreach ($broads as $b): ?>
+          <tr><td><?php echo htmlspecialchars($b['subject']); ?></td><td><span class="badge-pill badge-blue"><?php echo $b['target_group']; ?></span></td><td style="font-size:12px;color:var(--muted);"><?php echo isset($b['sent_at'])?date('M j, Y',strtotime($b['sent_at'])):'—'; ?></td></tr>
+          <?php endforeach; if(!$broads): ?><tr><td colspan="3" style="text-align:center;color:var(--muted);padding:20px;">No broadcasts sent yet</td></tr><?php endif; ?>
+        </tbody>
+      </table>
+    </div>
   </div>
   <div class="card">
     <div class="card-header"><h2>New Broadcast</h2></div>
@@ -512,20 +522,22 @@ function exportCSV() {
 ?>
 <div class="section-header"><p class="section-title">Donors</p></div>
 <div class="card">
-  <table class="data-table">
-    <thead><tr><th>Name</th><th>Email</th><th>Donations</th><th>Total Given</th><th>Joined</th></tr></thead>
-    <tbody>
-      <?php foreach ($donors as $d): ?>
-      <tr>
-        <td><strong><?php echo htmlspecialchars($d['full_name']??'—'); ?></strong></td>
-        <td style="font-size:12px;"><?php echo htmlspecialchars($d['email']); ?></td>
-        <td><?php echo $d['donation_count']; ?> donations</td>
-        <td>₦<?php echo number_format($d['total_given']); ?></td>
-        <td style="font-size:12px;color:var(--muted);"><?php echo isset($d['created_at'])?date('M j, Y',strtotime($d['created_at'])):'—'; ?></td>
-      </tr>
-      <?php endforeach; ?>
-    </tbody>
-  </table>
+  <div class="data-table-wrapper">
+    <table class="data-table">
+      <thead><tr><th>Name</th><th>Email</th><th>Donations</th><th>Total Given</th><th>Joined</th></tr></thead>
+      <tbody>
+        <?php foreach ($donors as $d): ?>
+        <tr>
+          <td><strong><?php echo htmlspecialchars($d['full_name']??'—'); ?></strong></td>
+          <td style="font-size:12px;"><?php echo htmlspecialchars($d['email']); ?></td>
+          <td><?php echo $d['donation_count']; ?> donations</td>
+          <td>₦<?php echo number_format($d['total_given']); ?></td>
+          <td style="font-size:12px;color:var(--muted);"><?php echo isset($d['created_at'])?date('M j, Y',strtotime($d['created_at'])):'—'; ?></td>
+        </tr>
+        <?php endforeach; ?>
+      </tbody>
+    </table>
+  </div>
 </div>
 
 <?php elseif ($tab === 'components'):

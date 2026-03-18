@@ -35,7 +35,7 @@ include_once 'includes/header.php';
     $slides      = $hero['slides'] ?? [];
     $videoUrl    = $hero['video_url'] ?? '';
     ?>
-    <section class="relative h-[90vh] flex items-center overflow-hidden" id="hero-section">
+    <section class="relative min-h-[70vh] md:min-h-[80vh] lg:h-[90vh] flex items-center overflow-hidden" id="hero-section">
 
         <!-- Background Layer -->
         <div class="absolute inset-0 z-0" id="hero-bg">
@@ -90,7 +90,7 @@ include_once 'includes/header.php';
                     <?php echo $badgeText; ?>
                 </span>
                 <?php endif; ?>
-                <h1 class="text-5xl md:text-7xl font-black leading-tight mb-6 tracking-tight">
+                <h1 class="text-4xl sm:text-5xl md:text-7xl font-black leading-tight mb-6 tracking-tight">
                     <?php
                     // Bold first word in a span
                     $words = explode(' ', $heroTitle);
@@ -98,12 +98,12 @@ include_once 'includes/header.php';
                     echo implode(' ', $words) . ' <span class="text-emerald-400">' . htmlspecialchars($last) . '</span>';
                     ?>
                 </h1>
-                <p class="text-lg md:text-xl text-slate-200 mb-10 leading-relaxed max-w-2xl"><?php echo htmlspecialchars($heroSub); ?></p>
-                <div class="flex flex-col sm:flex-row gap-5">
-                    <a href="<?php echo $btnPrimUrl; ?>" class="bg-emerald-600 hover:bg-emerald-500 text-white px-10 py-5 rounded-2xl font-bold text-lg transition-all flex items-center justify-center gap-2 shadow-2xl shadow-emerald-900/40 hover:-translate-y-1">
-                        <?php echo $btnPrimTxt; ?> <i data-lucide="arrow-right" class="w-6 h-6"></i>
+                <p class="text-base sm:text-lg md:text-xl text-slate-200 mb-10 leading-relaxed max-w-2xl"><?php echo htmlspecialchars($heroSub); ?></p>
+                <div class="flex flex-col sm:flex-row gap-4 sm:gap-5">
+                    <a href="<?php echo $btnPrimUrl; ?>" class="bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-4 sm:px-10 sm:py-5 rounded-2xl font-bold text-base sm:text-lg transition-all flex items-center justify-center gap-2 shadow-2xl shadow-emerald-900/40 hover:-translate-y-1">
+                        <?php echo $btnPrimTxt; ?> <i data-lucide="arrow-right" class="w-5 h-5 sm:w-6 sm:h-6"></i>
                     </a>
-                    <a href="<?php echo $btnSecUrl; ?>" class="bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/30 px-10 py-5 rounded-2xl font-bold text-lg transition-all text-center hover:-translate-y-1">
+                    <a href="<?php echo $btnSecUrl; ?>" class="bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/30 px-8 py-4 sm:px-10 sm:py-5 rounded-2xl font-bold text-base sm:text-lg transition-all text-center hover:-translate-y-1">
                         <?php echo $btnSecTxt; ?>
                     </a>
                 </div>

@@ -279,15 +279,25 @@ include_once 'includes/header.php';
   /* Stat cards */
   .stat-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:20px; margin-bottom:24px; }
   .stat-card { background:#fff; border:1px solid rgba(0,0,0,0.05); border-radius:16px; padding:20px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.02); }
+  .grid-2col { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .grid-1-340 { display:grid; grid-template-columns:1fr 340px; gap:16px; align-items:start; }
+  .grid-1-380 { display:grid; grid-template-columns:1fr 380px; gap:16px; align-items:start; }
+  .grid-1-320 { display:grid; grid-template-columns:1fr 320px; gap:16px; align-items:start; }
+  .grid-responsive { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:16px; }
   .stat-card .label { font-size:12px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
   .stat-card .value { font-size:32px; font-weight:800; color:var(--text); margin:8px 0 0; line-height:1; letter-spacing:-0.02em; }
   .stat-card .icon-wrap { float:right; width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; }
   /* Tables */
+  .data-table-wrapper { overflow-x:auto; }
   .data-table { width:100%; border-collapse:collapse; font-size:14px; }
   .data-table th { text-align:left; padding:14px 20px; font-size:12px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; border-bottom:1px solid rgba(0,0,0,0.05); background:#f8fafc; }
   .data-table td { padding:14px 20px; border-bottom:1px solid rgba(0,0,0,0.02); color:var(--text); vertical-align:middle; line-height:1.5; }
   .data-table tr:last-child td { border-bottom:none; }
   .data-table tr:hover td { background:#f8fafc; }
+  @media(max-width:768px) {
+    .data-table-wrapper { overflow-x:auto; }
+    .data-table { display:table; min-width:700px; }
+  }
   /* Forms */
   .form-label { display:block; font-size:12px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; margin-bottom:8px; }
   .form-input { width:100%; border:1px solid #cbd5e1; border-radius:10px; padding:10px 14px; font-size:14px; font-weight:500; color:var(--text); background:#fff; outline:none; transition:all .2s; box-sizing:border-box; }
@@ -337,7 +347,24 @@ include_once 'includes/header.php';
   .section-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:24px; gap:20px; }
   .section-title { font-size:24px; font-weight:800; color:var(--text); margin:0; letter-spacing:-0.02em; }
   .section-sub { font-size:14px; font-weight:500; color:var(--muted); margin:4px 0 0; }
-  @media(max-width:768px) { #sidebar { transform:translateX(-240px); } #sidebar.open { transform:translateX(0); } #main { margin-left:0; } .form-grid { grid-template-columns:1fr; } #topbar { padding:0 20px; } #content { padding:20px; } }
+  @media(max-width:1024px) {
+    #sidebar { transform:translateX(-240px); position:fixed; top:0; left:0; z-index:60; height:100vh; }
+    #sidebar.open { transform:translateX(0); }
+    #main { margin-left:0; }
+    #topbar { padding:0 20px; }
+    #content { padding:20px; }
+    .form-grid { grid-template-columns:1fr; }
+    /* Show mobile menu button */
+    #menu-btn { display:inline-flex; }
+    /* Make topbar actions wrap on smaller screens */
+    #topbar .actions { flex-wrap:wrap; gap:10px; }
+    #topbar .actions > * { flex: 1 1 auto; }
+    /* Provide a backdrop when sidebar is open */
+    #sidebar-backdrop { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.35); z-index:55; transition:opacity .3s; opacity:0; }
+    #sidebar-backdrop.open { display:block; opacity:1; }
+    /* Collapse responsive grid layouts */
+    .grid-responsive { grid-template-columns:1fr!important; }
+  }
 </style>
 
 <!-- ═══ SIDEBAR ═══ -->
@@ -406,7 +433,7 @@ include_once 'includes/header.php';
   <!-- Topbar -->
   <div id="topbar">
     <div style="display:flex;align-items:center;gap:12px;">
-      <button id="menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')" style="display:none;background:none;border:none;cursor:pointer;padding:4px;">
+      <button id="menu-btn" onclick="toggleSidebar()" style="display:none;background:none;border:none;cursor:pointer;padding:4px;">
         <i data-lucide="menu" style="width:20px;height:20px;"></i>
       </button>
       <span class="page-title"><?php
@@ -434,11 +461,31 @@ include_once 'includes/header.php';
   </div>
 </div>
 
+<!-- Mobile sidebar backdrop -->
+<div id="sidebar-backdrop" onclick="document.getElementById('sidebar').classList.remove('open');document.getElementById('sidebar-backdrop').classList.remove('open');"></div>
+
 <script>
 // Lucide icons
 if(typeof lucide!=='undefined') lucide.createIcons();
 
-// Upload widget logic
+  function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const backdrop = document.getElementById('sidebar-backdrop');
+    const isOpen = sidebar.classList.toggle('open');
+    backdrop.classList.toggle('open', isOpen);
+  }
+
+  // Close sidebar when clicking outside on mobile
+  document.addEventListener('click', (event) => {
+    const sidebar = document.getElementById('sidebar');
+    const backdrop = document.getElementById('sidebar-backdrop');
+    if (!sidebar || !backdrop) return;
+    if (!sidebar.classList.contains('open')) return;
+    if (sidebar.contains(event.target)) return;
+    if (event.target === document.getElementById('menu-btn')) return;
+    sidebar.classList.remove('open');
+    backdrop.classList.remove('open');
+  });
 function initUploadWidget(widgetId, fieldId, accept, folder) {
   const w = document.getElementById(widgetId);
   if (!w) return;
